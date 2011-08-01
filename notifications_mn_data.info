@@ -1,0 +1,7 @@
+name = "Notifications MN Data"
+description = "."
+package = "Notifications"
+core = "6.x"
+
+dependencies[] = "notifications"
+dependencies[] = "mn_core"

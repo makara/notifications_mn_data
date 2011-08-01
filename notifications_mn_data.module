@@ -1,0 +1,49 @@
+<?php
+/**
+ * @file
+ */
+
+/**
+ * Implementation of hook_notifications().
+ */
+function notifications_mn_data_notifications($op) {
+  switch ($op) {
+    case 'event types':
+      $types = array();
+
+      $types['mn_data-insert'] = array(
+        'type' => 'mn_data',
+        'action' => 'insert',
+        'name' => t('MN Data - insert'),
+        'description' => t('MN Data - insert'),
+        'line' => t('line'), // TODO
+        'digest' => array(),
+        'template' => 'notifications-event', // TODO
+      );
+      return $types;
+
+    case 'event classes':
+      return array();
+
+    case 'event actions':
+      return array();
+  }
+}
+
+/**
+ * Implementation of hook_data_insert()
+ */
+function notifications_mn_data_data_insert($record, $table) {
+  if ($table != 'feeds_data_syndication' || empty($record['id'])) {
+    return;
+  }
+
+  $event = array(
+    'module' => 'notifications_mn_data',
+    'oid' => $record['id'],
+    'type' => 'mn_data',
+    'action' => 'insert',
+    'params' => array('id' => $record['id'], 'feed_nid' => $record['feed_nid'], 'timestamp' => $record['timestamp']),
+  );
+  notifications_event($event);
+}
