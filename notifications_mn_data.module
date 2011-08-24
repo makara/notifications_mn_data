@@ -59,17 +59,6 @@ function notifications_mn_data_notifications($op) {
     case 'event types':
       $types = array();
 
-      // TODO: no use case yet.
-      $types['mn_data-insert'] = array(
-        'type' => 'mn_data',
-        'action' => 'insert',
-        'name' => t('MN Data - insert'),
-        'description' => t('MN Data - insert'),
-        'line' => '', // TODO: single line message for (maybe) digest.
-        'digest' => array(),
-        'template' => 'notifications-event', // TODO: ?
-      );
-
       // Event for stored views.
       $types['mn_data-stored_views'] = array(
         'type' => 'mn_data',
@@ -112,7 +101,9 @@ function notifications_mn_data_notifications_event($op, $event, $account = NULL)
 
       switch ($event->typekey) {
         case 'mn_data-stored_views':
-          $query[]['fields'] = array('stored_views_id' => notifications_stored_views_get_all_ids());
+          if (module_exists('notifications_stored_views')) {
+            $query[]['fields'] = array('stored_views_id' => notifications_stored_views_get_all_ids());
+          }
           break;
       }
 
@@ -135,11 +126,70 @@ function notifications_mn_data_data_insert($record, $table) {
     'params' => array('id' => $record['id'], 'feed_nid' => $record['feed_nid'], 'timestamp' => $record['timestamp']),
   );
 
-  // TODO: no use case yet.
-  $event['action'] = 'insert';
-  notifications_event($event);
-
   // Event for stored views.
   $event['action'] = 'stored_views';
   notifications_event($event);
+}
+
+/**
+ * Implementation of hook_notifications_stored_views_fields().
+ */
+function notifications_mn_data_notifications_stored_views_fields($event_type, $fields) {
+  if ($event_type == 'mn_data') {
+    return array(
+      'url' => array(
+        'label' => '',
+        'alter' => array(),
+        'display_as_link' => 0,
+        'exclude' => 1,
+        'id' => 'url',
+        'table' => 'feeds_data_syndication',
+        'field' => 'url',
+        'relationship' => 'none',
+      ),
+      'title' => array(
+        'label' => '',
+        'alter' => array(
+          'make_link' => 1,
+          'path' => '[url]',
+        ),
+        'exclude' => 0,
+        'id' => 'title',
+        'table' => 'feeds_data_syndication',
+        'field' => 'title',
+        'relationship' => 'none',
+      ),
+      'description' => array(
+        'label' => '',
+        'alter' => array(
+          'trim' => 1,
+          'max_length' => '500',
+          'word_boundary' => 1,
+          'ellipsis' => 1,
+          'strip_tags' => 0,
+          'html' => 1,
+        ),
+        'empty' => '',
+        'hide_empty' => 0,
+        'empty_zero' => 0,
+        'hilight_search' => 1,
+        'exclude' => 0,
+        'id' => 'description',
+        'table' => 'feeds_data_syndication',
+        'field' => 'description',
+        'relationship' => 'none',
+      ),
+      'timestamp' => array(
+        'label' => '',
+        'alter' => array(),
+        'date_format' => 'custom',
+        'custom_date_format' => 'F j, Y at g:i A',
+        'exclude' => 0,
+        'id' => 'timestamp',
+        'table' => 'feeds_data_syndication',
+        'field' => 'timestamp',
+        'relationship' => 'none',
+      ),
+    );
+  }
 }
